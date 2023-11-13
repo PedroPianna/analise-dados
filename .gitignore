@@ -1,3 +1,6 @@
+# Dataset
+prouni_2016_2019.csv
+*.csv
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
