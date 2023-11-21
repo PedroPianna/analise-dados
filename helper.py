@@ -90,7 +90,7 @@ def grafico_setores(coluna: pd.Series, titulo = "Proporção de bolsistas"):
     return fig, ax
 
 def histograma(coluna: pd.Series, bins = 10, titulo = "bolsistas"):
-    """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os valores da variável e os divide em intervalos. Depois plota o histograma"""
+    """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os valores da variável e os divide em intervalos. Depois plota o histograma, além de estatísticas descritivas da variável em questão"""
     # Referência: https://matplotlib.org/stable/gallery/statistics/hist.html#sphx-glr-gallery-statistics-hist-py
 
     fig, axs = plt.subplots(1, 2, tight_layout=True)
@@ -116,7 +116,9 @@ def histograma(coluna: pd.Series, bins = 10, titulo = "bolsistas"):
     axs[1].yaxis.set_major_formatter(PercentFormatter(xmax=1))
 
     # Colocar o título
-    axs[0].set_title('Número de ' + titulo)
+    axs[0].set_title('' + titulo)
     axs[1].set_title('Densidade de ' + titulo)
 
+    # Adicionar estatísticas (referência: https://stackoverflow.com/questions/34243737/how-to-add-some-statistics-to-the-plot-in-python)
+    plt.figtext(1.0, 0.2, coluna.describe())
     return fig, axs
