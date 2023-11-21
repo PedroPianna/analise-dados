@@ -39,6 +39,23 @@ def grafico_barras_proporcao(coluna: pd.Series, titulo = "Número de bolsistas")
 
     return fig, ax
 
+def grafico_setores_proporcao(coluna: pd.Series, titulo = "Número de bolsistas"):
+    """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os atributos únicos da variável, bem como seus respectivos valores e os usa para fazer um gráfico de barras com as proporções de cada entrada. Retorna um fig, ax para serem plotados"""
+    fig, ax = plt.subplots()
+
+    variavel = coluna.unique()
+    total = coluna.count()
+    observacoes = []
+    for num, tipo in enumerate(variavel):
+        observacoes.append(coluna.value_counts()[tipo] / total)
+
+    ax.pie(observacoes, labels = variavel, autopct='%1.1f%%')
+    
+    ax.set_ylabel('número de bolsistas')
+    ax.set_title(titulo)
+
+    return fig, ax
+
 def histograma(coluna: pd.Series, bins = 10, titulo = "bolsistas"):
     """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os valores da variável e os divide em intervalos. Depois plota o histograma"""
     # Referência: https://matplotlib.org/stable/gallery/statistics/hist.html#sphx-glr-gallery-statistics-hist-py
