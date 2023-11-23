@@ -1,7 +1,7 @@
 # Repositório para o trabalho final de Programação - INF05116 - UFES/2023
 
 ### Integrantes:
-* Azzure 
+* Azzure do Carmo
 * Caroline de Oliveira
 * Pedro Pianna
 
