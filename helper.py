@@ -1,5 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.signal import savgol_filter
+import scipy.stats
 from matplotlib import colors
 from matplotlib.ticker import PercentFormatter
 
@@ -92,9 +95,18 @@ def grafico_setores(coluna: pd.Series, titulo = "Proporção de bolsistas"):
 def histograma(coluna: pd.Series, bins = 10, titulo = "bolsistas"):
     """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os valores da variável e os divide em intervalos. Depois plota o histograma, além de estatísticas descritivas da variável em questão"""
     # Referência: https://matplotlib.org/stable/gallery/statistics/hist.html#sphx-glr-gallery-statistics-hist-py
-
     fig, axs = plt.subplots(1, 2, tight_layout=True)
+    
+    # Mudar os limites do hhistograma para melhor visualização
+    axs[0].set_xlim(19,60)
+    axs[0].set_xticks([19, 22, 25, 30, 35, 40, 45, 50, 55, 60])
+    axs[1].set_xlim(19,60)
+    axs[1].set_xticks([19, 22, 25, 30, 35, 40, 45, 50, 55, 60])
+    # Tirar a margem horizontal
+    axs[0].margins(x=0)
+    axs[1].margins(x=0)
 
+    #Histograma 1
     # N is the count in each bin, bins is the lower-limit of the bin
     N, bins, patches = axs[0].hist(coluna, bins=bins)
 
@@ -109,16 +121,22 @@ def histograma(coluna: pd.Series, bins = 10, titulo = "bolsistas"):
         color = plt.cm.viridis(norm(thisfrac))
         thispatch.set_facecolor(color)
 
-    # We can also normalize our inputs by the total number of counts
-    axs[1].hist(coluna, bins=bins, density=True)
-
+    # Histograma 2
+    axs[1].hist(coluna, bins=bins,density=True, ec="black")
     # Now we format the y-axis to display percentage
     axs[1].yaxis.set_major_formatter(PercentFormatter(xmax=1))
+
+    # Aproximar o histograma a uma distribuição (referência: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rv_histogram.html#scipy.stats.rv_histogram)
+    hist = np.histogram(coluna, bins=int(coluna.max() - coluna.min()))
+    hist_dist = scipy.stats.rv_histogram(hist, density=False)
+    X = np.linspace(19, 60, 1000)
+    yhat = savgol_filter(hist_dist.pdf(X), 100,3)
+    axs[1].plot(X, yhat, label='PDF')
 
     # Colocar o título
     axs[0].set_title('' + titulo)
     axs[1].set_title('Densidade de ' + titulo)
 
-    # Adicionar estatísticas (referência: https://stackoverflow.com/questions/34243737/how-to-add-some-statistics-to-the-plot-in-python)
+    # Adicionar estatísticas descritivas (referência: https://stackoverflow.com/questions/34243737/how-to-add-some-statistics-to-the-plot-in-python)
     plt.figtext(1.0, 0.2, coluna.describe())
     return fig, axs
