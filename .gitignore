@@ -3,6 +3,7 @@ prouni_2016_2019.csv
 *.csv
 .DS_Store
 *.png
+*.html
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
