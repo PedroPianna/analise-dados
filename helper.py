@@ -55,10 +55,21 @@ def grafico_barras(coluna: pd.Series, titulo = "Número de bolsistas"):
     observacoes = []
     for tipo in variavel:
         observacoes.append(coluna.value_counts()[tipo])
-        
-    bar_colors = ['tab:red', 'tab:green']
-    ax.bar(variavel, observacoes, color=bar_colors)
-    
+
+    xmin = coluna.min()
+    xmax = coluna.max()
+    xticks = [i for i in range(xmin,xmax + 1)]
+    plt.xlim(xmin,xmax)
+    plt.xticks(xticks)
+
+    ax.bar(variavel, observacoes)
+
+    if xmax - xmin > 3:
+        polinomio = 3
+    else:
+        polinomio = 2
+
+    ax.plot(variavel, savgol_filter(observacoes, xmax - xmin + 1, polinomio), c = "red")
     ax.set_ylabel('número de bolsistas')
     ax.set_title(titulo)
 
@@ -74,8 +85,7 @@ def grafico_barras_proporcao(coluna: pd.Series, titulo = "Número de bolsistas")
     for tipo in variavel:
         observacoes.append(coluna.value_counts()[tipo] / total)
 
-    bar_colors = ['tab:red', 'tab:green']
-    ax.bar(variavel, observacoes, color=bar_colors)
+    ax.bar(variavel, observacoes)
     
     ax.set_ylabel('número de bolsistas')
     ax.set_title(titulo)
@@ -130,13 +140,20 @@ def histograma(coluna: pd.Series, bins = 10, titulo = "bolsistas"):
     hist = np.histogram(coluna, bins=int(coluna.max() - coluna.min()))
     hist_dist = scipy.stats.rv_histogram(hist, density=False)
     X = np.linspace(19, 60, 1000)
-    yhat = savgol_filter(hist_dist.pdf(X), 100,3)
+    yhat = savgol_filter(hist_dist.pdf(X), 500,3)
     axs[1].plot(X, yhat, label='PDF')
 
     # Colocar o título
     axs[0].set_title('' + titulo)
     axs[1].set_title('Densidade de ' + titulo)
-
+    axs[0].set_xlabel("Idade")
+    axs[1].set_xlabel("Idade")
     # Adicionar estatísticas descritivas (referência: https://stackoverflow.com/questions/34243737/how-to-add-some-statistics-to-the-plot-in-python)
-    plt.figtext(1.0, 0.2, coluna.describe())
+    estatisticas = coluna.describe()
+    media = "Média: " + str(round(estatisticas[1],1)) + " anos\n"  
+    desvio_padrao = "Desvio-padrão: " + str(round(estatisticas[2],1)) + " anos\n" 
+    total_alunos = "N. Alunos: " + str(int(estatisticas[0]))
+    s = media + desvio_padrao + total_alunos
+    plt.figtext(1.0, 0.2, s) 
+    
     return fig, axs
