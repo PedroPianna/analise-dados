@@ -46,58 +46,75 @@ def filtrar_coluna(coluna: pd.Series, n_categorias = 0, crescente = False) -> pd
         coluna = pd.concat([coluna, outros_series])
         
     return coluna
-    
-def grafico_barras(coluna: pd.Series, titulo = "Número de bolsistas"):
+
+def filtrar_coluna_por(var1: pd.Series, var2: pd.Series, filtrar_por: str):
+    """Cria um novo objeto pd.Series com entradas que contém os valores de 'filtrar_por'"""
+    data = pd.DataFrame({'var1': var1, 'var2': var2})
+    filtrado = data[data['var1'].str.contains(filtrar_por)]
+    return filtrado["var2"]
+
+def grafico_barras_horizontal(coluna: pd.Series, n=10, titulo = "Número de bolsistas", y = "", remover_outros = True):
     """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os atributos únicos da variável, bem como seus respectivos valores e os usa para fazer um gráfico de barras. Retorna um fig, ax para serem plotados"""
     fig, ax = plt.subplots()
 
-    variavel = coluna.unique()
-    observacoes = []
-    for tipo in variavel:
-        observacoes.append(coluna.value_counts()[tipo])
+    coluna = coluna_qualitativa_para_quantitativo(coluna)
+    valores_unicos = len(coluna.unique())
+    coluna = filtrar_coluna(coluna,n)
+    if remover_outros:
+        coluna = coluna[:-1]
 
-    xmin = coluna.min()
-    xmax = coluna.max()
-    xticks = [i for i in range(xmin,xmax + 1)]
-    plt.xlim(xmin,xmax)
-    plt.xticks(xticks)
-
-    ax.bar(variavel, observacoes)
-
-    if xmax - xmin > 3:
-        polinomio = 3
-    else:
-        polinomio = 2
-
-    ax.plot(variavel, savgol_filter(observacoes, xmax - xmin + 1, polinomio), c = "red")
-    ax.set_ylabel('número de bolsistas')
+    ax.barh(coluna.index, coluna)
+    ax.invert_yaxis()
+    ax.set_ylabel(y)
     ax.set_title(titulo)
+
+    s = "N˚ de categorias: " + str(valores_unicos)
+    plt.figtext(-0.2, 0.1, s) 
 
     return fig, ax
 
-def grafico_barras_proporcao(coluna: pd.Series, titulo = "Número de bolsistas"):
-    """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os atributos únicos da variável, bem como seus respectivos valores e os usa para fazer um gráfico de barras com as proporções de cada entrada. Retorna um fig, ax para serem plotados"""
+def grafico_barras_horizontal_2_variaveis(var1: pd.Series, var2: pd.Series, filtrar_por, n=10, titulo = "Número de bolsistas", y = "", remover_outros = True):
+    """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os atributos únicos da variável, bem como seus respectivos valores e os usa para fazer um gráfico de barras. Retorna um fig, ax para serem plotados"""
     fig, ax = plt.subplots()
+    coluna = filtrar_coluna_por(var1, var2, filtrar_por)
+    coluna = coluna_qualitativa_para_quantitativo(coluna)
+    valores_unicos = len(coluna.unique())
+    coluna = filtrar_coluna(coluna,n)
+    if remover_outros:
+        coluna = coluna[:-1]
 
-    variavel = coluna.unique()
-    total = coluna.count()
-    observacoes = []
-    for tipo in variavel:
-        observacoes.append(coluna.value_counts()[tipo] / total)
-
-    ax.bar(variavel, observacoes)
-    
-    ax.set_ylabel('número de bolsistas')
+    ax.barh(coluna.index, coluna)
+    ax.invert_yaxis()
+    ax.set_ylabel(y)
     ax.set_title(titulo)
+
+    s = "N˚ de categorias: " + str(valores_unicos)
+    plt.figtext(-0.2, 0.1, s) 
 
     return fig, ax
 
-def grafico_setores(coluna: pd.Series, titulo = "Proporção de bolsistas"):
+def grafico_setores(coluna: pd.Series, n = 10, titulo = "Proporção de bolsistas"):
     """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os atributos únicos da variável, bem como seus respectivos valores e os usa para fazer um gráfico de setores (pizza) com as proporções de cada entrada. Retorna um fig, ax para serem plotados"""
+    coluna = coluna_qualitativa_para_quantitativo(coluna)
+    valores_unicos = len(coluna.unique())
+    coluna = filtrar_coluna(coluna,n)
     fig, ax = plt.subplots()
 
     ax.pie(coluna, labels = coluna.index, autopct='%1.1f%%')
-    
+    ax.set_title(titulo)
+    s = "N˚ de categorias: " + str(valores_unicos)
+    plt.figtext(0.2, 0.15, s) 
+    return fig, ax
+
+def grafico_setores_2_variaveis(var1: pd.Series, var2: pd.Series, filtrar_por: str, n = 10, titulo = "Proporção de bolsistas"):
+    """Essa função recebe dois objetos pd.Series, uma string que será o filtro e, opcionalmente, um título. Cria um novo objeto pd.Series com entradas que contém os valores de "filtrar_por". Depois pega os atributos únicos da variável, bem como seus respectivos valores e os usa para fazer um gráfico de setores (pizza) com as proporções de cada entrada. Retorna um fig, ax para serem plotados"""
+    filtrado = filtrar_coluna_por(var1, var2, filtrar_por)
+    filtrado = coluna_qualitativa_para_quantitativo(filtrado)
+    filtrado = filtrar_coluna(filtrado, n)
+
+    fig, ax = plt.subplots()
+
+    ax.pie(filtrado, labels = filtrado.index, autopct='%1.1f%%')
     ax.set_title(titulo)
 
     return fig, ax
@@ -140,7 +157,7 @@ def histograma(coluna: pd.Series, bins = 10, titulo = "bolsistas"):
     hist = np.histogram(coluna, bins=int(coluna.max() - coluna.min()))
     hist_dist = scipy.stats.rv_histogram(hist, density=False)
     X = np.linspace(19, 60, 1000)
-    yhat = savgol_filter(hist_dist.pdf(X), 500,3)
+    yhat = savgol_filter(hist_dist.pdf(X), 100,3)
     axs[1].plot(X, yhat, label='PDF')
 
     # Colocar o título
@@ -148,12 +165,33 @@ def histograma(coluna: pd.Series, bins = 10, titulo = "bolsistas"):
     axs[1].set_title('Densidade de ' + titulo)
     axs[0].set_xlabel("Idade")
     axs[1].set_xlabel("Idade")
+
     # Adicionar estatísticas descritivas (referência: https://stackoverflow.com/questions/34243737/how-to-add-some-statistics-to-the-plot-in-python)
     estatisticas = coluna.describe()
     media = "Média: " + str(round(estatisticas[1],1)) + " anos\n"  
-    desvio_padrao = "Desvio-padrão: " + str(round(estatisticas[2],1)) + " anos\n" 
+    desvio_padrao = "Desvio-padrão: " + str(round(estatisticas[2],1)) + " anos\n"
+    p_quartil = "Primeiro quartil: " + str(int(estatisticas[4])) + " anos\n"
+    s_quartil = "Segundo quartil: " + str(int(estatisticas[5])) + " anos\n"
+    t_quartil = "Terceiro quartil: " + str(int(estatisticas[6])) + " anos\n"
     total_alunos = "N. Alunos: " + str(int(estatisticas[0]))
-    s = media + desvio_padrao + total_alunos
+    s = media + desvio_padrao + p_quartil + s_quartil + t_quartil + total_alunos 
     plt.figtext(1.0, 0.2, s) 
     
     return fig, axs
+
+def grafico_barras_proporcao(coluna: pd.Series, titulo = "Número de bolsistas"):
+    """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os atributos únicos da variável, bem como seus respectivos valores e os usa para fazer um gráfico de barras com as proporções de cada entrada. Retorna um fig, ax para serem plotados"""
+    fig, ax = plt.subplots()
+
+    variavel = coluna.unique()
+    total = coluna.count()
+    observacoes = []
+    for tipo in variavel:
+        observacoes.append(coluna.value_counts()[tipo] / total)
+
+    ax.bar(variavel, observacoes)
+    
+    ax.set_ylabel('número de bolsistas')
+    ax.set_title(titulo)
+
+    return fig, ax
