@@ -54,7 +54,7 @@ def filtrar_coluna_por(var1: pd.Series, var2: pd.Series, filtrar_por: str):
     return filtrado["var2"]
 
 def grafico_barras_horizontal(coluna: pd.Series, n=10, titulo = "Número de bolsistas", y = "", remover_outros = True):
-    """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os atributos únicos da variável, bem como seus respectivos valores e os usa para fazer um gráfico de barras. Retorna um fig, ax para serem plotados"""
+    """Essa função recebe um objeto pd.Series, um número de categorias, um título, um valor para o título do eixo y e um booleano que remove ou não a categoria "outros". Pega os atributos únicos da variável, bem como seus respectivos valores e os usa para fazer um gráfico de barras. Retorna um fig, ax para serem plotados"""
     fig, ax = plt.subplots()
 
     coluna = coluna_qualitativa_para_quantitativo(coluna)
@@ -73,8 +73,8 @@ def grafico_barras_horizontal(coluna: pd.Series, n=10, titulo = "Número de bols
 
     return fig, ax
 
-def grafico_barras_horizontal_2_variaveis(var1: pd.Series, var2: pd.Series, filtrar_por, n=10, titulo = "Número de bolsistas", y = "", remover_outros = True):
-    """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os atributos únicos da variável, bem como seus respectivos valores e os usa para fazer um gráfico de barras. Retorna um fig, ax para serem plotados"""
+def grafico_barras_horizontal_2_variaveis(var1: pd.Series, var2: pd.Series, filtrar_por: str, n=10, titulo = "Número de bolsistas", y = "", remover_outros = True):
+    """Essa função recebe dois objetos pd.Series, uma string que será utilizada para filtrar o primeiro objeto pd.Series, um número de categorias, um título, um valor para o título do eixo y e um booleano que remove ou não a categoria "outros". Filtra os objetos pandas, bem como seus respectivos valores e os usa para fazer um gráfico de barras horizontal. Retorna um fig, ax para serem plotados"""
     fig, ax = plt.subplots()
     coluna = filtrar_coluna_por(var1, var2, filtrar_por)
     coluna = coluna_qualitativa_para_quantitativo(coluna)
@@ -94,7 +94,7 @@ def grafico_barras_horizontal_2_variaveis(var1: pd.Series, var2: pd.Series, filt
     return fig, ax
 
 def grafico_setores(coluna: pd.Series, n = 10, titulo = "Proporção de bolsistas"):
-    """Essa função recebe um objeto pd.Series e, opcionalmente, um título. Pega os atributos únicos da variável, bem como seus respectivos valores e os usa para fazer um gráfico de setores (pizza) com as proporções de cada entrada. Retorna um fig, ax para serem plotados"""
+    """Essa função recebe um objeto pd.Series e, opcionalmente, um número de categorias e um título. Pega os atributos únicos da variável, bem como seus respectivos valores e os usa para fazer um gráfico de setores (pizza) com as proporções de cada entrada. Retorna um fig, ax para serem plotados"""
     coluna = coluna_qualitativa_para_quantitativo(coluna)
     valores_unicos = len(coluna.unique())
     coluna = filtrar_coluna(coluna,n)
